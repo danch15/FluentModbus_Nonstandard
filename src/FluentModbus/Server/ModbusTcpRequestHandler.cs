@@ -18,8 +18,8 @@ namespace FluentModbus
 
         #region Constructors
 
-        public ModbusTcpRequestHandler(TcpClient tcpClient, ModbusTcpServer tcpServer)
-            : base(tcpServer, 260)
+        public ModbusTcpRequestHandler(TcpClient tcpClient, ModbusTcpServer tcpServer, int maxFrameBufferSize)
+            : base(tcpServer, maxFrameBufferSize)
         {
             _tcpClient = tcpClient;
             _networkStream = tcpClient.GetStream();
@@ -82,13 +82,13 @@ namespace FluentModbus
             {
                 FrameBuffer.Writer.WriteReverse(_transactionIdentifier);
                 FrameBuffer.Writer.WriteReverse(_protocolIdentifier);
-                FrameBuffer.Writer.WriteReverse((byte)(length - 6));
+                FrameBuffer.Writer.WriteReverse((short)(length - 6));
             }
             else
             {
                 FrameBuffer.Writer.Write(_transactionIdentifier);
                 FrameBuffer.Writer.Write(_protocolIdentifier);
-                FrameBuffer.Writer.Write((byte)(length - 6));
+                FrameBuffer.Writer.Write((short)(length - 6));
             }
 
             FrameBuffer.Writer.Write(UnitIdentifier);

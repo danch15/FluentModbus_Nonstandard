@@ -14,7 +14,7 @@ namespace FluentModbus
         /// Gets the connection status of the underlying client.
         /// </summary>
         public abstract bool IsConnected { get; }
-        
+
         protected private bool SwapBytes { get; set; }
 
         #endregion
@@ -147,7 +147,7 @@ namespace FluentModbus
             var buffer = TransceiveFrame(unitIdentifier, ModbusFunctionCode.ReadHoldingRegisters, writer =>
             {
                 writer.Write((byte)ModbusFunctionCode.ReadHoldingRegisters);              // 07     Function Code
-                
+
                 if (BitConverter.IsLittleEndian)
                 {
                     writer.WriteReverse(startingAddress);                                 // 08-09  Starting Address
@@ -212,7 +212,10 @@ namespace FluentModbus
                     writer.Write((ushort)quantity);                                       // 10-11  Quantity of Registers
                 }
 
-                writer.Write((byte)(quantity * 2));                                       // 12     Byte Count = Quantity of Registers * 2
+                if (quantity > 0x7B)
+                    writer.Write((byte)0);
+                else
+                    writer.Write((byte)(quantity * 2));                                   // 12     Byte Count = Quantity of Registers * 2
 
                 writer.Write(dataset, 0, dataset.Length);
             });
@@ -461,7 +464,10 @@ namespace FluentModbus
                     writer.Write((ushort)quantityOfOutputs);                                // 10-11  Quantity of Outputs
                 }
 
-                writer.Write((byte)byteCount);                                              // 12     Byte Count = Outputs
+                if (quantityOfOutputs > 0x7D0)
+                    writer.Write((byte)0);
+                else
+                    writer.Write((byte)byteCount);                                          // 12     Byte Count = Outputs
 
                 writer.Write(convertedData);
             });
@@ -559,8 +565,11 @@ namespace FluentModbus
                     writer.Write(writeStartingAddress);                                 // 12-13  Read Starting Address
                     writer.Write((ushort)writeQuantity);                                // 14-15  Quantity to Write
                 }
-                
-                writer.Write((byte)(writeQuantity * 2));                                // 16     Byte Count = Quantity to Write * 2
+
+                if (writeQuantity > 0x7B)
+                    writer.Write((byte)0);
+                else
+                    writer.Write((byte)(writeQuantity * 2));                            // 16     Byte Count = Quantity to Write * 2
 
                 writer.Write(dataset, 0, dataset.Length);
             });

@@ -123,7 +123,10 @@ namespace FluentModbus
 
                 }
 
-                writer.Write((byte)(quantity * 2));                                       // 12     Byte Count = Quantity of Registers * 2
+                if (quantity > 123)
+                    writer.Write((byte)0);
+                else
+                    writer.Write((byte)(quantity * 2));                                   // 12     Byte Count = Quantity of Registers * 2
 
                 writer.Write(dataset, 0, dataset.Length);
             }, cancellationToken).ConfigureAwait(false);
@@ -377,7 +380,10 @@ namespace FluentModbus
                     writer.Write((ushort)quantityOfOutputs);                                // 10-11  Quantity of Outputs
                 }
 
-                writer.Write((byte)byteCount);                                              // 12     Byte Count = Outputs
+                if (quantityOfOutputs > 0x7D0)
+                    writer.Write((byte)0);
+                else
+                    writer.Write((byte)byteCount);                                          // 12     Byte Count = Outputs
 
                 writer.Write(convertedData);
             }, cancellationToken);
@@ -477,8 +483,11 @@ namespace FluentModbus
                     writer.Write(writeStartingAddress);                                 // 12-13  Read Starting Address
                     writer.Write((ushort)writeQuantity);                                // 14-15  Quantity to Write
                 }
-                
-                writer.Write((byte)(writeQuantity * 2));                                // 16     Byte Count = Quantity to Write * 2
+
+                if (writeQuantity > 0x7B)
+                    writer.Write((byte)0);
+                else
+                    writer.Write((byte)(writeQuantity * 2));                                // 16     Byte Count = Quantity to Write * 2
 
                 writer.Write(dataset, 0, dataset.Length);
             }, cancellationToken).ConfigureAwait(false);
