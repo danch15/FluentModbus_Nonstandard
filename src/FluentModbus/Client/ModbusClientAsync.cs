@@ -123,7 +123,7 @@ namespace FluentModbus
 
                 }
 
-                if (quantity > 123)
+                if (quantity > 0x7B)
                     writer.Write((byte)0);
                 else
                     writer.Write((byte)(quantity * 2));                                   // 12     Byte Count = Quantity of Registers * 2

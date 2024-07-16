@@ -164,7 +164,7 @@ namespace FluentModbus
             base.SwapBytes = BitConverter.IsLittleEndian && endianness == ModbusEndianness.BigEndian || 
                             !BitConverter.IsLittleEndian && endianness == ModbusEndianness.LittleEndian;
 
-            _frameBuffer = new ModbusFrameBuffer(size: MaxFrameBufferSize); //SCT
+            _frameBuffer = new ModbusFrameBuffer(size: MaxFrameBufferSize);
 
             if (_tcpClient.HasValue && _tcpClient.Value.IsInternal)
                 _tcpClient.Value.Value.Close();
