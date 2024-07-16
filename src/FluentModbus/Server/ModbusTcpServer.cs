@@ -19,6 +19,15 @@ namespace FluentModbus
 
         #region Constructors
 
+        #region Properties
+
+        /// <summary>
+        /// 最大缓冲区（非标准Modbus协议，一般为寄存器数量×2）
+        /// </summary>
+        public int MaxFrameBufferSize { get; set; } = 260;
+
+        #endregion
+
         /// <summary>
         /// Creates a Modbus TCP server with support for holding registers (read and write, 16 bit), input registers (read-only, 16 bit), coils (read and write, 1 bit) and discete inputs (read-only, 1 bit).
         /// </summary>
@@ -113,7 +122,7 @@ namespace FluentModbus
                     // There are no default timeouts (SendTimeout and ReceiveTimeout = 0), 
                     // use ConnectionTimeout instead.
                     var tcpClient = await _tcpClientProvider.AcceptTcpClientAsync();
-                    var requestHandler = new ModbusTcpRequestHandler(tcpClient, this, Logger);
+                    var requestHandler = new ModbusTcpRequestHandler(tcpClient, this, Logger, MaxFrameBufferSize);
 
                     lock (Lock)
                     {
@@ -191,7 +200,7 @@ namespace FluentModbus
 
             RequestHandlers = new List<ModbusTcpRequestHandler>()
             {
-                new ModbusTcpRequestHandler(tcpClient, this, Logger)
+                new ModbusTcpRequestHandler(tcpClient, this, Logger, MaxFrameBufferSize)
             };
         }
 

@@ -189,7 +189,7 @@ namespace FluentModbus
 
             var length = 0;
 
-            if (ModbusServer.AlwaysRaiseChangedEvent) 
+            if (ModbusServer.AlwaysRaiseChangedEvent)
             {
                 for (int i = 0; i < newValues.Length; i++)
                 {
@@ -219,10 +219,13 @@ namespace FluentModbus
             var startingAddress = FrameBuffer.Reader.ReadUInt16Reverse();
             var quantityOfRegisters = FrameBuffer.Reader.ReadUInt16Reverse();
 
-            if (CheckRegisterBounds(ModbusFunctionCode.ReadHoldingRegisters, startingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityOfRegisters, 0x7D))
+            if (CheckRegisterBounds(ModbusFunctionCode.ReadHoldingRegisters, startingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityOfRegisters, quantityOfRegisters > 0x7D ? ushort.MaxValue : (ushort)0x7D))
             {
                 FrameBuffer.Writer.Write((byte)ModbusFunctionCode.ReadHoldingRegisters);
-                FrameBuffer.Writer.Write((byte)(quantityOfRegisters * 2));
+                if (quantityOfRegisters > 0x7D)
+                    FrameBuffer.Writer.Write((byte)0);
+                else
+                    FrameBuffer.Writer.Write((byte)(quantityOfRegisters * 2));
                 FrameBuffer.Writer.Write(ModbusServer.GetHoldingRegisterBuffer(UnitIdentifier).Slice(startingAddress * 2, quantityOfRegisters * 2).ToArray());
             }
         }
@@ -233,7 +236,7 @@ namespace FluentModbus
             var quantityOfRegisters = FrameBuffer.Reader.ReadUInt16Reverse();
             var byteCount = FrameBuffer.Reader.ReadByte();
 
-            if (CheckRegisterBounds(ModbusFunctionCode.WriteMultipleRegisters, startingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityOfRegisters, 0x7B))
+            if (CheckRegisterBounds(ModbusFunctionCode.WriteMultipleRegisters, startingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityOfRegisters, quantityOfRegisters > 0x7B ? ushort.MaxValue : (ushort)0x7B))
             {
                 var holdingRegisters = ModbusServer.GetHoldingRegisters(UnitIdentifier);
 
@@ -241,7 +244,7 @@ namespace FluentModbus
                     ? holdingRegisters[startingAddress..].ToArray()
                     : Array.Empty<short>();
 
-                var newValues = MemoryMarshal.Cast<byte, short>(FrameBuffer.Reader.ReadBytes(byteCount).AsSpan());
+                var newValues = MemoryMarshal.Cast<byte, short>(FrameBuffer.Reader.ReadBytes(quantityOfRegisters * 2).AsSpan());
 
                 newValues.CopyTo(holdingRegisters[startingAddress..]);
 
@@ -269,9 +272,9 @@ namespace FluentModbus
             var startingAddress = FrameBuffer.Reader.ReadUInt16Reverse();
             var quantityOfCoils = FrameBuffer.Reader.ReadUInt16Reverse();
 
-            if (CheckRegisterBounds(ModbusFunctionCode.ReadCoils, startingAddress, ModbusServer.MaxCoilAddress, quantityOfCoils, 0x7D0))
+            if (CheckRegisterBounds(ModbusFunctionCode.ReadCoils, startingAddress, ModbusServer.MaxCoilAddress, quantityOfCoils, quantityOfCoils > 0x7D0 ? ushort.MaxValue : (ushort)0x7D0))
             {
-                var byteCount = (byte)Math.Ceiling((double)quantityOfCoils / 8);
+                var byteCount = (ushort)Math.Ceiling((double)quantityOfCoils / 8);
 
                 var coilBuffer = ModbusServer.GetCoilBuffer(UnitIdentifier);
                 var targetBuffer = new byte[byteCount];
@@ -291,7 +294,10 @@ namespace FluentModbus
                 }
 
                 FrameBuffer.Writer.Write((byte)ModbusFunctionCode.ReadCoils);
-                FrameBuffer.Writer.Write(byteCount);
+                if (quantityOfCoils > 0x7D0)
+                    FrameBuffer.Writer.Write((byte)0);
+                else
+                    FrameBuffer.Writer.Write((byte)byteCount);
                 FrameBuffer.Writer.Write(targetBuffer);
             }
         }
@@ -301,9 +307,9 @@ namespace FluentModbus
             var startingAddress = FrameBuffer.Reader.ReadUInt16Reverse();
             var quantityOfInputs = FrameBuffer.Reader.ReadUInt16Reverse();
 
-            if (CheckRegisterBounds(ModbusFunctionCode.ReadDiscreteInputs, startingAddress, ModbusServer.MaxInputRegisterAddress, quantityOfInputs, 0x7D0))
+            if (CheckRegisterBounds(ModbusFunctionCode.ReadDiscreteInputs, startingAddress, ModbusServer.MaxInputRegisterAddress, quantityOfInputs, quantityOfInputs > 0x7D0 ? ushort.MaxValue : (ushort)0x7D0))
             {
-                var byteCount = (byte)Math.Ceiling((double)quantityOfInputs / 8);
+                var byteCount = (ushort)Math.Ceiling((double)quantityOfInputs / 8);
 
                 var discreteInputBuffer = ModbusServer.GetDiscreteInputBuffer(UnitIdentifier);
                 var targetBuffer = new byte[byteCount];
@@ -323,7 +329,10 @@ namespace FluentModbus
                 }
 
                 FrameBuffer.Writer.Write((byte)ModbusFunctionCode.ReadDiscreteInputs);
-                FrameBuffer.Writer.Write(byteCount);
+                if (quantityOfInputs > 0x7D0)
+                    FrameBuffer.Writer.Write((byte)0);
+                else
+                    FrameBuffer.Writer.Write((byte)byteCount);
                 FrameBuffer.Writer.Write(targetBuffer);
             }
         }
@@ -333,24 +342,27 @@ namespace FluentModbus
             var startingAddress = FrameBuffer.Reader.ReadUInt16Reverse();
             var quantityOfRegisters = FrameBuffer.Reader.ReadUInt16Reverse();
 
-            if (CheckRegisterBounds(ModbusFunctionCode.ReadInputRegisters, startingAddress, ModbusServer.MaxInputRegisterAddress, quantityOfRegisters, 0x7D))
+            if (CheckRegisterBounds(ModbusFunctionCode.ReadInputRegisters, startingAddress, ModbusServer.MaxInputRegisterAddress, quantityOfRegisters, quantityOfRegisters > 0x7D ? ushort.MaxValue : (ushort)0x7D))
             {
                 FrameBuffer.Writer.Write((byte)ModbusFunctionCode.ReadInputRegisters);
-                FrameBuffer.Writer.Write((byte)(quantityOfRegisters * 2));
+                if (quantityOfRegisters > 0x7D)
+                    FrameBuffer.Writer.Write((byte)0);
+                else
+                    FrameBuffer.Writer.Write((byte)(quantityOfRegisters * 2));
                 FrameBuffer.Writer.Write(ModbusServer.GetInputRegisterBuffer(UnitIdentifier).Slice(startingAddress * 2, quantityOfRegisters * 2).ToArray());
             }
         }
 
         private void ProcessWriteMultipleCoils()
         {
-            const int maxQuantityOfOutputs = 0x07B0;
 
             var startingAddress = FrameBuffer.Reader.ReadUInt16Reverse();
             var quantityOfOutputs = FrameBuffer.Reader.ReadUInt16Reverse();
             var byteCount = FrameBuffer.Reader.ReadByte();
             var byteCountFromQuantity = (quantityOfOutputs + 7) / 8;
+            ushort maxQuantityOfOutputs = quantityOfOutputs > 0x07B0 ? ushort.MaxValue : (ushort)0x7B0;
 
-            if (byteCountFromQuantity != byteCount)
+            if (byteCount != 0 && byteCountFromQuantity != byteCount)
             {
                 WriteExceptionResponse(ModbusFunctionCode.WriteMultipleCoils, ModbusExceptionCode.IllegalDataValue);
                 return;
@@ -358,7 +370,7 @@ namespace FluentModbus
 
             if (CheckRegisterBounds(ModbusFunctionCode.WriteMultipleCoils, startingAddress, ModbusServer.MaxCoilAddress, quantityOfOutputs, maxQuantityOfOutputs))
             {
-                var newValues = FrameBuffer.Reader.ReadBytes(byteCount);
+                var newValues = FrameBuffer.Reader.ReadBytes(byteCountFromQuantity);
 
                 Span<int> changedOutputs = stackalloc int[0];
 
@@ -374,7 +386,7 @@ namespace FluentModbus
                     bool value = (b & (1 << bit)) != 0;
 
                     var hasChanged = WriteCoil(value, (ushort)(startingAddress + i));
-                    
+
                     if (ModbusServer.EnableRaisingEvents && (hasChanged || ModbusServer.AlwaysRaiseChangedEvent))
                     {
                         changedOutputs[changedOutputsLength] = startingAddress + i;
@@ -485,14 +497,14 @@ namespace FluentModbus
             var quantityToWrite = FrameBuffer.Reader.ReadUInt16Reverse();
             var writeByteCount = FrameBuffer.Reader.ReadByte();
 
-            if (CheckRegisterBounds(ModbusFunctionCode.ReadWriteMultipleRegisters, readStartingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityToRead, 0x7D))
+            if (CheckRegisterBounds(ModbusFunctionCode.ReadWriteMultipleRegisters, readStartingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityToRead, quantityToRead > 0x7D ? ushort.MaxValue : (ushort)0x7D))
             {
-                if (CheckRegisterBounds(ModbusFunctionCode.ReadWriteMultipleRegisters, writeStartingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityToWrite, 0x7B))
+                if (CheckRegisterBounds(ModbusFunctionCode.ReadWriteMultipleRegisters, writeStartingAddress, ModbusServer.MaxHoldingRegisterAddress, quantityToWrite, quantityToWrite > 0x7B ? ushort.MaxValue : (ushort)0x7B))
                 {
                     var holdingRegisters = ModbusServer.GetHoldingRegisters(UnitIdentifier);
 
                     // write data (write is performed before read according to spec)
-                    var writeData = MemoryMarshal.Cast<byte, short>(FrameBuffer.Reader.ReadBytes(writeByteCount).AsSpan());
+                    var writeData = MemoryMarshal.Cast<byte, short>(FrameBuffer.Reader.ReadBytes(quantityToWrite * 2).AsSpan());
 
                     var oldValues = ModbusServer.EnableRaisingEvents
                         ? holdingRegisters[writeStartingAddress..].ToArray()
@@ -512,7 +524,10 @@ namespace FluentModbus
 
                     // write response
                     FrameBuffer.Writer.Write((byte)ModbusFunctionCode.ReadWriteMultipleRegisters);
-                    FrameBuffer.Writer.Write((byte)(quantityToRead * 2));
+                    if (quantityToRead > 0x7D)
+                        FrameBuffer.Writer.Write((byte)0);
+                    else
+                        FrameBuffer.Writer.Write((byte)(quantityToRead * 2));
                     FrameBuffer.Writer.Write(readData);
                 }
             }

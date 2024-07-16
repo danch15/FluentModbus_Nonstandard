@@ -57,6 +57,11 @@ namespace FluentModbus
 
         internal static int DefaultConnectTimeout { get; set; } = (int)TimeSpan.FromSeconds(1).TotalMilliseconds;
 
+        /// <summary>
+        /// 最大缓冲区（非标准Modbus协议，一般为寄存器数量×2）
+        /// </summary>
+        public int MaxFrameBufferSize { get; set; } = 260;
+
         #endregion
 
         #region Methods
@@ -159,7 +164,7 @@ namespace FluentModbus
             base.SwapBytes = BitConverter.IsLittleEndian && endianness == ModbusEndianness.BigEndian || 
                             !BitConverter.IsLittleEndian && endianness == ModbusEndianness.LittleEndian;
 
-            _frameBuffer = new ModbusFrameBuffer(size: 260);
+            _frameBuffer = new ModbusFrameBuffer(size: MaxFrameBufferSize);
 
             if (_tcpClient.HasValue && _tcpClient.Value.IsInternal)
                 _tcpClient.Value.Value.Close();
