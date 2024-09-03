@@ -106,7 +106,7 @@ namespace FluentModbus
             Connect(parsedRemoteEndpoint!, endianness);
         #endif
         
-        #if NETSTANDARD2_1_OR_GREATER
+        #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
             Connect(parsedRemoteEndpoint, endianness);
         #endif
         }
