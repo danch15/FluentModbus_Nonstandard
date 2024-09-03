@@ -150,6 +150,17 @@ namespace FluentModbus
         }
 
         /// <summary>
+        /// Connect to the specified <paramref name="remoteEndpoint"/>.
+        /// </summary>
+        /// <param name="localEndpoint">本地IP</param>
+        /// <param name="remoteEndpoint">The IP address and port of the end unit.</param>
+        /// <param name="endianness">Specifies the endianness of the data exchanged with the Modbus server.</param>
+        public void Connect(IPEndPoint localEndpoint, IPEndPoint? remoteEndpoint = default, ModbusEndianness endianness = ModbusEndianness.LittleEndian)
+        {
+            Initialize(new TcpClient(localEndpoint), remoteEndpoint, endianness);
+        }
+
+        /// <summary>
         /// Initialize the Modbus TCP client with an externally managed <see cref="TcpClient"/>.
         /// </summary>
         /// <param name="tcpClient">The externally managed <see cref="TcpClient"/>.</param>
